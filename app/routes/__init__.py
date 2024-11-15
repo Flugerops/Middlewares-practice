@@ -1,1 +1,1 @@
-from .default import api_router
+from .default import api_router, home
