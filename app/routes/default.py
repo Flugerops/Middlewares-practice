@@ -5,7 +5,7 @@ from fastapi import APIRouter, Header
 
 from ..middlewares import logger
 
-# from ..schemas import Header
+from ..schemas import TestScheme
 
 
 api_router = APIRouter(prefix="/api")
@@ -25,5 +25,7 @@ async def create_thing():
 
 
 @api_router.post("/")
-async def home(X_Custom_Header: Annotated[str | None, Header()] = None):
-    return {"header": X_Custom_Header}
+async def home(
+    data: TestScheme, X_Custom_Header: Annotated[str | None, Header()] = None
+):
+    return {"header": X_Custom_Header, "data": data}

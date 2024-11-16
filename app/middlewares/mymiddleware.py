@@ -22,8 +22,6 @@ class HeadMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
 
-        # if request.scope.get("path") in self.head_ignore:
-        #     return Response("Not operational", status_code=status.HTTP_410_GONE)
         if not request.url.path in self.head_ignore:
             if "X-Custom-Header" not in request.headers:
                 return Response(
@@ -44,13 +42,16 @@ class BodyMiddleware(HeadMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
 
+        body = await request.json()
         response = await super().dispatch(request, call_next)
-        if not request.url.path in self.body_ignore:
-            if request.method == "POST":
-                body = await request.json()
-                if "test" not in body:
+
+        if request.method == "POST":
+            if not request.url.path in self.body_ignore:
+                if "name" not in body:
                     return Response(
                         "Missing Body", status_code=status.HTTP_400_BAD_REQUEST
                     )
+            else:
+                return response
         # response = await call_next(request)
         return response
