@@ -41,17 +41,22 @@ class BodyMiddleware(HeadMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
-
-        body = await request.json()
-        response = await super().dispatch(request, call_next)
-
         if request.method == "POST":
-            if not request.url.path in self.body_ignore:
-                if "name" not in body:
+            body = {}
+            try:
+                body = await request.json()
+            except Exception:
+                if request.url.path not in self.body_ignore:
                     return Response(
-                        "Missing Body", status_code=status.HTTP_400_BAD_REQUEST
+                        "Invalid or missing JSON Body", 
+                        status_code=status.HTTP_400_BAD_REQUEST
                     )
-            else:
-                return response
-        # response = await call_next(request)
+            
+            if request.url.path not in self.body_ignore and "name" not in body:
+                return Response(
+                    "Missing 'name' in JSON body", 
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+        
+        response = await super().dispatch(request, call_next)
         return response
